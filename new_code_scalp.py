@@ -7,10 +7,8 @@ import time
 import os
 
 def init():
-	global booked_profit,trade_start,max_diff,slippage,list_1,final,trade_no,status_long ,status_short , soda,final_res,result
+	global booked_profit,trade_start,max_diff,slippage,list_1,final,trade_no,status_long ,status_short , soda,final_res,result,target
 	booked_profit = []
-	trade_start = 10
-	max_diff = 100
 	slippage = 1  # Nifty Points
 
 	list_1 = []
@@ -18,6 +16,9 @@ def init():
 	final_res = {}
 	trade_no = 1
 	soda = 0 
+	# max_diff = 40 # Diff for stoploss bar bar
+	# target = 50 # target
+	trade_start = 6
 
 	status_long = {'done_MO' : None ,'done_p' :None ,'done_sl': None, 'completed':None,'Remark_1': None,'long' : None , 'short' : None , 'Date': None , 'short_price': None ,'Entry_time': None , 'Target': None , 'Stoploss': None ,'LTP': None ,'Remark': None ,'Traded_short' : None, 'Traded_long': None , 'Qty': None , 'pnl' :None, 'exit_time' : None , 'Long_price':None}
 	status_short = {'done_MO' : None ,'done_p' :None ,'done_sl': None, 'completed':None,'Remark_1': None,'long' : None , 'short' : None , 'Date': None , 'short_price': None ,'Entry_time': None , 'Target': None , 'Stoploss': None ,'LTP': None ,'Remark': None ,'Traded_short' : None, 'Traded_long': None , 'Qty': None , 'pnl' :None, 'exit_time' : None , 'Long_price':None}
@@ -38,16 +39,18 @@ files_list  = os.listdir(input_file)
 for file in files_list:
 
 	df = pd.read_csv(file)  # original DataFrame 
-	print(file)
+	# print(file)
 
-	dff  = df.iloc[5:10] # Slicing the Data Frame to find the certain rows . Also making a new dataframe with new Date
+	dff  = df.iloc[5:6] # Slicing the Data Frame to find the certain rows . Also making a new dataframe with new Date
 	dff = dff[['low' , 'high']] # DataFrame selectiong Rows Jo kam ki hai sari rows me se.
 	high = dff['high'].max()
 	low = dff['low'].min()
 	diff = (high -low)
-	target = 400
+	max_diff = int(high * 0.0025) # Diff for stoploss bar bar
+	target = int(high * 0.0030) # target
 	df_trade = df.iloc[trade_start:]
 	df_trade = df_trade.set_index(df_trade['date'])
+	# pdb.set_trace()
 
 	status_long['long'] = high
 	status_long['short'] = low
@@ -62,6 +65,7 @@ for file in files_list:
 
 		for index, ohlc in df_trade.iterrows():
 			ltp = df_trade.loc[index]['close']
+
 			# print(f' Candle Time  = {index[11:16]}')
 			# print(f' Trade_Number  =  {trade_no}')
 
@@ -77,7 +81,7 @@ for file in files_list:
 				status_long['LTP'] = ltp
 				status_long['Remark'] = 'Long_trade_1'
 				status_long['Traded_long'] = 'Yes'
-				status_long['Qty'] = 100
+				status_long['Qty'] = 50
 				# pdb.set_trace()
 				# 
 
@@ -90,7 +94,7 @@ for file in files_list:
 				status_short['LTP'] = ltp
 				status_short['Remark'] = 'Short_trade_1'
 				status_short['Traded_short'] = 'Yes'
-				status_short['Qty'] = 100
+				status_short['Qty'] = 50
 				# 
 
 
@@ -226,6 +230,31 @@ for file in files_list:
 		
 		status_short = {'done_MO' : None ,'done_p' :None ,'done_sl': None, 'completed':None,'Remark_1': None,'long' : None , 'short' : None , 'Date': None , 'short_price': None ,'Entry_time': None , 'Target': None , 'Stoploss': None ,'LTP': None ,'Remark': None ,'Traded_short' : None, 'Traded_long': None , 'Qty': None , 'pnl' :None, 'exit_time' : None , 'Long_price':None}
 		status_long = {'done_MO' : None ,'done_p' :None ,'done_sl': None, 'completed':None,'Remark_1': None,'long' : None , 'short' : None , 'Date': None , 'short_price': None ,'Entry_time': None , 'Target': None , 'Stoploss': None ,'LTP': None ,'Remark': None ,'Traded_short' : None, 'Traded_long': None , 'Qty': None , 'pnl' :None, 'exit_time' : None , 'Long_price':None}
+
 result = result[['Date' , 'Entry_time','exit_time','Remark', 'Remark_1', 'Long_price','short_price','pnl' , 'Cumulative','Stoploss','Target']]
+result.to_csv('nifty.csv')
 print(result)			
+
+
+
+df =  pd.read_csv('nifty.csv')
+# pdb.set_trace()
+
+df['Cumulative'] = df.pnl.cumsum().round(2)
+df['HighValue'] = df['Cumulative'].cummax()
+
+df['Drawdown_main'] = df['Cumulative'] - df['HighValue']
+max_drawdown = df.describe().T.loc['Drawdown_main'].min()
+Total_profit = df['pnl'].sum()
+
+
+# os.chdir(r"C:\Users\Admin\Desktop\Code_back\Result_final_storage\ooo")
+# df.to_excel( res_file + '.xlsx')
+# (?# path = os.chdir(r"C:\Users\Admin\Desktop\Code_back\Result_final_storage"))
+
+
+
+print(f'max_drawdown =  {max_drawdown}')
+print(f'Total Profit = {Total_profit}')
+print(f'max_drawdown to profit = {Total_profit/round(abs(max_drawdown),1)}')
 # pdb.set_trace()
