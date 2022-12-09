@@ -1,0 +1,34 @@
+import pdb
+import pandas as pd
+import xlwings as xw
+
+
+target  = [0.0015 , 0.0020 , 0.0025 , 0.0030 , 0.0035 , 0.0040 , 0.0050]
+Candle_ranges  = [0.0010, 0.0012 , 0.0014 , 0.0016 , 0.0020 , 0.0025 , 0.0030 , 0.0035 , 0.0040 , 0.0050 ]
+start  = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,25,30,45,60,75,90,150,200]
+end = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,25,30,45,60,75,90,150,200]
+
+all_combs = {}
+comb_no = 0
+
+for x in target:
+	for y in Candle_ranges:
+		for s in start :
+			for e in end :
+
+				comb =  {'target' : x , 'Candle_ranges' : y , 'start' : s , 'end' : e  }
+				comb_no = comb_no + 1
+				print(comb_no)
+				all_combs[comb_no] = comb
+
+df = pd.DataFrame(all_combs).T
+
+
+
+
+
+
+pdb.set_trace()	
+combs.to_excel('aki.xlsx')
+
+
