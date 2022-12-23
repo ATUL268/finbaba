@@ -38,7 +38,7 @@ def init():
 combinations = xw.Book('kamki_n.xlsx')
 sht = combinations.sheets['Sheet2']
 
-for row_no in range(2,3):
+for row_no in range(2,7):
 
 	try:
 		init()
@@ -89,7 +89,7 @@ for row_no in range(2,3):
 						status_long['LTP'] = ltp
 						status_long['Remark'] = 'Long_trade_1'
 						status_long['Traded_long'] = 'Yes'
-						status_long['Qty'] = 50
+						status_long['Qty'] = 100
 						status_long['Day'] = parse(status_long['Date']).strftime("%A")
 						status_long['Year'] = parse(status_long['Date']).year
 						status_long['Month'] = calendar.month_name[parse(status_long['Date']).month]
@@ -104,7 +104,7 @@ for row_no in range(2,3):
 						status_short['LTP'] = ltp
 						status_short['Remark'] = 'Short_trade_1'
 						status_short['Traded_short'] = 'Yes'
-						status_short['Qty'] = 50
+						status_short['Qty'] = 100
 						status_short['Day'] = parse(status_short['Date']).strftime("%A")
 						status_short['Year'] = parse(status_short['Date']).year
 						status_short['Month'] = calendar.month_name[parse(status_short['Date']).month]
@@ -239,7 +239,9 @@ for row_no in range(2,3):
 
 
 		ddff= ddff[['Date','Traded_long','Traded_short','Long_price','short_price','completed','Entry_time','exit_time','Target','Stoploss','Remark_1','Qty','pnl','Cumulative','HighValue','Drawdown_main','Day','Year','Month']]
+		lst=[ddff[ddff['Day'].str.contains("Monday")]['pnl'].sum(),ddff[ddff['Day'].str.contains("Tuesday")]['pnl'].sum(),ddff[ddff['Day'].str.contains("Wednesday")]['pnl'].sum(),ddff[ddff['Day'].str.contains("Thursday")]['pnl'].sum(),ddff[ddff['Day'].str.contains("Friday")]['pnl'].sum(),ddff[ddff['Month'].str.contains("January")]['pnl'].sum(),ddff[ddff['Month'].str.contains("February")]['pnl'].sum(),ddff[ddff['Month'].str.contains("March")]['pnl'].sum(),ddff[ddff['Month'].str.contains("April")]['pnl'].sum(),ddff[ddff['Month'].str.contains("May")]['pnl'].sum(),ddff[ddff['Month'].str.contains("June")]['pnl'].sum(),ddff[ddff['Month'].str.contains("July")]['pnl'].sum(),ddff[ddff['Month'].str.contains("August")]['pnl'].sum(),ddff[ddff['Month'].str.contains("September")]['pnl'].sum(),ddff[ddff['Month'].str.contains("October")]['pnl'].sum(),ddff[ddff['Month'].str.contains("November")]['pnl'].sum(),ddff[ddff['Month'].str.contains("December")]['pnl'].sum()]
 		ddff.to_csv(str(row_no) + '.csv')
+		# pdb.set_trace()
 
 		# print(f'max_drawdown =  {max_drawdown}')
 		Total_profit = ddff['pnl'].sum()
@@ -251,12 +253,15 @@ for row_no in range(2,3):
 		# print(f'max_drawdown to profit = {Total_profit/round(abs(max_drawdown),1)}')
 
 		# pdb.set_trace()
+		sht.range(f"I1:Z1").value = ["Monday" ,"Tuesday" ,"Wednesday" ,"Thursday" ,"Friday" ,"January" ,"February" ,"March" ,"April" ,"May" ,"June" ,"July" ,"August" ,"September" ,"October" ,"November" ,"December" ,"2022"]
+
 
 		sht.range('F' + str(row_no)).value = Total_profit
 		sht.range('G' + str(row_no)).value = max_drawdown
 		sht.range('H' + str(row_no)).value = result.shape[0]
-		
+		sht.range('I' + str(row_no)).value = lst
 		os.chdir(r"E:\code_aa\intraday strategy nifty_new\res")
+		lst.clear()
 		# sht.range('I' + str(row_no)).value = Total_profit
 
 	
