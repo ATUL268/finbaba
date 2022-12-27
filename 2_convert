@@ -1,0 +1,59 @@
+from pprint import pprint
+import pdb
+import pandas as pd
+import datetime
+import time
+import xlwings as xw
+import zrd_login
+kite = zrd_login.kite
+import pdb
+
+
+
+
+def LTP(name):
+
+	zrd_name = 'MCX:'+ name
+	data = kite.quote([zrd_name])
+	ltp = data[zrd_name]['last_price']
+	return ltp
+
+
+# ltp  = LTP('SILVERMIC23FEBFUT')
+# pdb.set_trace()
+
+
+
+
+wb = xw.Book('silvertick.csv')
+sht = wb.sheets['Sheet1']
+		
+name = 'SILVERMIC23FEBFUT'
+name_2 = 'SILVERMIC23APRFUT'
+ticks = []
+index = ticks.copy()
+scrip = ticks.copy()
+
+
+# name2 = 'NIFTY 50'
+
+def convert_ohlc(ticks: list[dict] ,name , candle):
+	ctime = datetime.datetime.now()
+	ltp = LTP(name)
+	ticks.append({'time' : ctime, 'close' : ltp})
+	df = pd.DataFrame(ticks)
+	df = df.set_index(df['time'])
+	df = df[['close']]
+	ohlc = df.resample(candle).ohlc()
+	return ohlc
+
+
+while True:
+	try:
+		ohlc = convert_ohlc(ticks = index ,name=name,candle ='1Min')
+		ohlc1 = convert_ohlc(ticks = scrip ,name=name_2,candle ='1Min')
+		sht.range("A2").value = ohlc
+		sht.range("G2").value = ohlc1
+	
+	except Exception as e:
+		print(f'error {e}')
