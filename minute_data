@@ -1,0 +1,137 @@
+from pprint import pprint
+import pdb
+import pandas as pd
+import datetime
+import time
+import xlwings as xw
+import pyotp
+from kite_trade import *
+
+
+
+def login_WN2979():
+
+	secret_key_WN2979 = "ZV3CKDDYVFFKW52KJQXAWXFJU4GCPW23"
+	totp_WN2979 = pyotp.TOTP(secret_key_WN2979).now()
+	totp_WN2979 = str(totp_WN2979)
+	# print(totp_WN2979) 
+
+	user_id = "WN2979"       # Login Id
+	password = "money@123"      # Login password
+	twofa = totp_WN2979        # Login Pin or TOTP
+
+	enctoken = get_enctoken(user_id, password, twofa)
+	
+	return enctoken
+
+kite = KiteApp(login_WN2979())
+
+def LTP(name):
+
+	zrd_name = 'NSE:'+ name
+	data = kite.quote([zrd_name])
+	ltp = data[zrd_name]['last_price']
+	return ltp
+def get_equity_data(name, segment, delta, interval, continuous, oi):
+
+	token = kite.ltp([segment + name])[segment + name]['instrument_token']
+	to_date = datetime.datetime.now().date()
+	from_date = to_date - datetime.timedelta(days=delta)
+
+	data = kite.historical_data(instrument_token=token, from_date=from_date, to_date=to_date, interval=interval, continuous=False, oi=False)
+	data  = pd.DataFrame(data)
+	
+	return data
+
+def get_fno_data(name, delta, interval,oi):
+
+	token =  kite.ltp([name])[name]['instrument_token']
+	to_date = datetime.datetime.now().date()
+	from_date = to_date - datetime.timedelta(days=delta)
+	data = kite.historical_data(instrument_token=token, from_date=from_date, to_date=to_date, interval=interval,  oi=True)
+	dff = pd.DataFrame(data)	
+	return dff
+
+def init():
+	global name,segment,delta,interval,expiry,d_name,step_value
+	name = 'NIFTY 50'
+	segment = 'NSE:'
+	delta = 1
+	interval = 'minute'
+	expiry = '22DEC'
+	d_name = 'NFO:' + name[:5]
+	step_value = 50
+
+wb = xw.Book('historical.xlsx')
+
+sht = wb.sheets['Sheet1']
+
+sht.range(f"b1:e1").value = ["Open", "High", "Low", "close"]
+init()
+main_lst = []
+
+while True :
+	try:
+
+		wb = xw.Book('historical.xlsx')
+
+		sht = wb.sheets['Sheet1']
+		c_time = datetime.datetime.now()
+		# print(c_time)
+
+		
+		df = get_equity_data(name=name, segment=segment, delta=delta, interval=interval, continuous=None, oi=None)
+		completed_candle = pd.Series(datetime.datetime.now()).dt.floor('1min')[0]- datetime.timedelta(minutes=1)
+		completed_candle = completed_candle.strftime("%Y-%m-%d %H:%M:%S+05:30")
+
+		# completed_candle = '2022-12-22 15:01:00+05:30'
+		print(completed_candle)
+
+		df = df.set_index(df['date'])
+		lst = [df.loc[completed_candle]['open'],
+			  df.loc[completed_candle]['high'],
+			  df.loc[completed_candle]['low'],
+			  df.loc[completed_candle]['close']]
+
+
+
+		# print(lst)
+		main_lst.append(lst)
+		pdb.set_trace()
+
+
+		ltp = LTP(name)
+		atm_strike = round(ltp/step_value)*step_value
+		CE_Option = d_name+ expiry+str(atm_strike)+'CE'
+		PE_Option = d_name+expiry+str(atm_strike)+'PE'
+
+		dff  = get_fno_data(name=CE_Option, delta=delta, interval=interval,oi=None)
+		dff = dff.set_index(dff['date'])
+		lst_2 = [dff.loc[completed_candle]['open'],
+				dff.loc[completed_candle]['high'], 
+				dff.loc[completed_candle]['low'],
+				dff.loc[completed_candle]['close']]
+
+		# print(lst_2)
+
+		main_lst.append(lst_2)
+
+		dfpe  = get_fno_data(name=PE_Option, delta=delta, interval=interval,oi=None)
+		dfpe = dfpe.set_index(dfpe['date'])
+
+		lst_3 = [dfpe.loc[completed_candle]['open'],
+				dfpe.loc[completed_candle]['high'],
+				dfpe.loc[completed_candle]['low'],
+				dfpe.loc[completed_candle]['close']]
+
+		# print(lst_3)
+		main_lst.append(lst_3)
+
+
+		# pdb.set_trace()
+		sht.range("B2").value = main_lst
+		main_lst.clear()
+
+	except Exception as e:
+		print(e)
+	# pdb.set_trace()
