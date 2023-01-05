@@ -1,0 +1,42 @@
+import os 
+# from kiteconnect import KiteConnect
+# from kiteconnect import KiteTicker
+import time, json, datetime, sys 
+import xlwings as xw 
+import pandas as pd
+import pdb
+
+wb = xw.Book('trade.xlsx')
+sht = wb.sheets['Work']
+
+
+
+lst = []
+subs_lst = []
+while True:
+	try:
+		time.sleep(0.25)
+		
+		ohlc_time = sht.range(f"b{2}:b{10}").value
+		get_signal = sht.range(f"l{2}:l{10}").value
+		
+		idx = 0
+		for i in ohlc_time:
+			 
+			if i:
+				if i not in subs_lst:
+					subs_lst.append(i)
+				if i in subs_lst:
+						
+					signal = get_signal[idx]
+					if signal is not None and sht.range(f"M{idx + 2}").value is None:
+						# print(f'Oder_placed = {M{idx + 2}}')
+						sht.range(f"M{idx + 2}").value = 'M' + str(idx + 2)
+						# print('AA gaya')
+						# pdb.setex_trace()
+			idx += 1
+
+			# print(idx)
+	except Exception as e:
+		print(e)
+		pass
