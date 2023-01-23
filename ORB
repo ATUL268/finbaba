@@ -1,0 +1,177 @@
+from pprint import pprint
+import pdb 
+import pandas as pd
+import time
+import zrd_login
+kite = zrd_login.kite
+import datetime
+import support_file as get
+import talib
+import winsound
+import xlwings as xw
+
+
+
+def init():
+	global watchlist_500,ltp,zrd_watchlist,Target,Stoploss,status,sht
+	watchlist_500 =['3MINDIA', 'ABB', 'POWERINDIA', 'ACC', 'AIAENG', 'APLAPOLLO', 'AUBANK', 'AARTIDRUGS', 'AARTIIND', 'AAVAS', 'ABBOTINDIA', 'ADANIENT',  'ADANIPORTS', 'ATGL', 'ADANITRANS', 'ABCAPITAL', 'ABFRL', 'ADVENZYMES', 'AEGISCHEM', 'AFFLE', 'AJANTPHARM', 'AKZOINDIA', 'ALEMBICLTD', 'APLLTD', 'ALKEM', 'ALKYLAMINE', 'ALOKINDS', 'AMARAJABAT', 'AMBER', 'AMBUJACEM', 'ANGELBRKG', 'APOLLOHOSP', 'APOLLOTYRE', 'ASAHIINDIA', 'ASHOKLEY', 'ASHOKA', 'ASIANPAINT', 'ASTERDM', 'ASTRAZEN', 'ASTRAL', 'ATUL', 'AUROPHARMA', 'AVANTIFEED', 'DMART', 'AXISBANK', 'BASF', 'BEML', 'BSE', 'BAJAJ-AUTO', 'BAJAJCON', 'BAJAJELEC', 'BAJFINANCE', 'BAJAJFINSV', 'BAJAJHLDNG', 'BALAMINES', 'BALKRISIND', 'BALMLAWRIE', 'BALRAMCHIN', 'BANDHANBNK', 'BANKBARODA', 'BANKINDIA', 'MAHABANK', 'BATAINDIA', 'BAYERCROP', 'BERGEPAINT', 'BDL', 'BEL', 'BHARATFORG', 'BHEL', 'BPCL', 'BHARATRAS', 'BHARTIARTL', 'BIOCON', 'BIRLACORPN', 'BSOFT', 'BLISSGVS', 'BLUEDART', 'BLUESTARCO', 'BBTC', 'BOSCHLTD', 'BRIGADE', 'BRITANNIA', 'BURGERKING', 'CCL', 'CESC', 'CRISIL', 'CSBBANK', 'CADILAHC', 'CANFINHOME', 'CANBK', 'CAPLIPOINT', 'CGCL', 'CARBORUNIV', 'CASTROLIND', 'CEATLTD', 'CENTRALBK', 'CDSL', 'CENTURYPLY', 'CENTURYTEX', 'CERA', 'CHALET', 'CHAMBLFERT', 'CHOLAHLDNG', 'CHOLAFIN', 'CIPLA', 'CUB', 'COALINDIA', 'COCHINSHIP', 'COFORGE', 'COLPAL', 'CAMS', 'CONCOR', 'COROMANDEL', 'CREDITACC', 'CROMPTON', 'CUMMINSIND', 'CYIENT', 'DCBBANK', 'DCMSHRIRAM', 'DLF', 'DABUR', 'DALBHARAT', 'DEEPAKNTR', 'DELTACORP', 'DHANI', 'DHANUKA', 'DBL', 'DISHTV', 'DCAL', 'DIVISLAB', 'DIXON', 'LALPATHLAB', 'DRREDDY', 'EIDPARRY', 'EIHOTEL', 'EPL', 'EDELWEISS', 'EICHERMOT', 'ELGIEQUIP', 'EMAMILTD', 'ENDURANCE', 'ENGINERSIN', 'EQUITAS', 'ERIS', 'ESCORTS', 'EXIDEIND', 'FDC', 'FEDERALBNK', 'FINEORG', 'FINCABLES', 'FINPIPE', 'FSL', 'FORTIS', 'FCONSUMER', 'FRETAIL', 'GAIL', 'GEPIL', 'GMMPFAUDLR', 'GMRINFRA', 'GALAXYSURF', 'GRSE', 'GARFIBRES', 'GICRE', 'GILLETTE', 'GLAXO', 'GLENMARK', 'GODFRYPHLP', 'GODREJAGRO', 'GODREJCP', 'GODREJIND', 'GODREJPROP', 'GRANULES', 'GRAPHITE', 'GRASIM', 'GESHIP', 'GREAVESCOT', 'GRINDWELL', 'GUJALKALI', 'GAEL', 'FLUOROCHEM', 'GUJGASLTD', 'GNFC', 'GPPL', 'GSFC', 'GSPL', 'GULFOILLUB', 'HEG', 'HCLTECH', 'HDFCAMC', 'HDFCBANK', 'HDFCLIFE', 'HFCL', 'HAPPSTMNDS', 'HATSUN', 'HAVELLS', 'HEIDELBERG', 'HEMIPROP', 'HEROMOTOCO', 'HSCL', 'HINDALCO', 'HAL', 'HINDCOPPER', 'HINDPETRO', 'HINDUNILVR', 'HINDZINC', 'HONAUT', 'HUDCO', 'HDFC', 'HUHTAMAKI', 'ICICIBANK', 'ICICIGI', 'ICICIPRULI', 'ISEC', 'IDBI', 'IDFCFIRSTB', 'IDFC', 'IFBIND', 'IIFL', 'IIFLWAM', 'IOLCP', 'IRB', 'IRCON', 'ITC', 'ITI', 'INDIACEM', 'IBULHSGFIN', 'IBREALEST', 'INDIAMART', 'INDIANB', 'IEX', 'INDHOTEL', 'IOC', 'IOB', 'IRCTC', 'ICIL', 'INDOCO', 'IGL', 'INDUSTOWER', 'INDUSINDBK', 'INFIBEAM', 'NAUKRI', 'INFY', 'INGERRAND', 'INOXLEISUR', 'INTELLECT', 'INDIGO', 'IPCALAB', 'JBCHEPHARM', 'JKCEMENT', 'JKLAKSHMI', 'JKPAPER', 'JKTYRE', 'JMFINANCIL', 'JSWENERGY', 'JSWSTEEL', 'JTEKTINDIA', 'JAMNAAUTO', 'JINDALSAW', 'JSLHISAR', 'JSL', 'JINDALSTEL', 'JCHAC', 'JUBLFOOD', 'JUSTDIAL', 'JYOTHYLAB', 'KPRMILL', 'KEI', 'KNRCON', 'KPITTECH', 'KRBL', 'KSB', 'KAJARIACER', 'KALPATPOWR', 'KANSAINER', 'KARURVYSYA', 'KSCL', 'KEC', 'KOTAKBANK', 'L&TFH', 'LTTS', 'LICHSGFIN', 'LAOPALA', 'LAXMIMACH', 'LTI', 'LT', 'LAURUSLABS', 'LEMONTREE', 'LINDEINDIA', 'LUPIN', 'LUXIND', 'MASFIN', 'MMTC', 'MOIL', 'MRF', 'MGL', 'MAHSCOOTER', 'MAHSEAMLES', 'M&MFIN', 'M&M', 'MAHINDCIE', 'MHRIL', 'MAHLOG', 'MANAPPURAM', 'MRPL', 'MARICO', 'MARUTI', 'MFSL', 'MAXHEALTH', 'MAZDOCK', 'METROPOLIS', 'MINDTREE', 'MINDACORP', 'MINDAIND', 'MIDHANI', 'MOTHERSUMI', 'MOTILALOFS', 'MPHASIS', 'MCX', 'MUTHOOTFIN', 'NATCOPHARM', 'NBCC', 'NCC', 'NESCO', 'NHPC', 'NLCINDIA', 'NMDC', 'NOCIL', 'NTPC', 'NH', 'NATIONALUM', 'NFL', 'NAVINFLUOR', 'NESTLEIND', 'NETWORK18', 'NILKAMAL', 'NAM-INDIA', 'OBEROIRLTY', 'ONGC', 'OIL', 'OFSS', 'ORIENTELEC', 'ORIENTREF', 'PIIND', 'PNBHOUSING', 'PNCINFRA', 'PVR', 'PAGEIND', 'PERSISTENT', 'PETRONET', 'PFIZER', 'PHILIPCARB', 'PHOENIXLTD', 'PIDILITIND', 'PEL', 'POLYMED', 'POLYCAB', 'POLYPLEX', 'PFC', 'POWERGRID', 'PRESTIGE', 'PRINCEPIPE', 'PRSMJOHNSN', 'PGHL', 'PGHH', 'PNB', 'QUESS', 'RBLBANK', 'RECLTD', 'RITES', 'RADICO', 'RVNL', 'RAIN', 'RAJESHEXPO', 'RALLIS', 'RCF', 'RATNAMANI', 'RAYMOND', 'REDINGTON', 'RELAXO', 'RELIANCE', 'RESPONIND', 'ROSSARI', 'ROUTE', 'SBICARD', 'SBILIFE', 'SIS', 'SJVN', 'SKFINDIA', 'SRF', 'SANOFI', 'SCHAEFFLER', 'SCHNEIDER', 'SEQUENT', 'SHARDACROP', 'SFL', 'SHILPAMED', 'SCI', 'SHOPERSTOP', 'SHREECEM', 'SHRIRAMCIT', 'SRTRANSFIN', 'SIEMENS', 'SOBHA', 'SOLARINDS', 'SOLARA', 'SONATSOFTW', 'SPANDANA', 'SPICEJET', 'STARCEMENT', 'SBIN', 'SAIL', 'SWSOLAR', 'STLTECH', 'STAR', 'SUDARSCHEM', 'SUMICHEM', 'SPARC', 'SUNPHARMA', 'SUNTV', 'SUNCLAYLTD', 'SUNDARMFIN', 'SUNDRMFAST', 'SUNTECK', 'SUPRAJIT', 'SUPREMEIND', 'SUPPETRO', 'SUVENPHAR', 'SUZLON', 'SWANENERGY', 'SYMPHONY', 'SYNGENE', 'TCIEXP', 'TCNSBRANDS', 'TTKPRESTIG', 'TV18BRDCST', 'TVSMOTOR', 'TANLA', 'TASTYBITE', 'TATACHEM', 'TATACOFFEE', 'TATACOMM', 'TCS', 'TATACONSUM', 'TATAELXSI', 'TATAINVEST', 'TATAMTRDVR', 'TATAMOTORS', 'TATAPOWER', 'TATASTEEL', 'TEAMLEASE', 'TECHM', 'NIACL', 'RAMCOCEM', 'THERMAX', 'THYROCARE', 'TIMKEN', 'TITAN', 'TORNTPHARM', 'TORNTPOWER', 'TRENT', 'TRIDENT', 'TRITURBINE', 'TIINDIA', 'UCOBANK', 'UFLEX', 'UPL', 'UTIAMC', 'UJJIVAN', 'UJJIVANSFB', 'ULTRACEMCO', 'UNIONBANK', 'UBL', 'MCDOWELL-N', 'VGUARD', 'VMART', 'VIPIND', 'VSTIND', 'VAIBHAVGBL', 'VAKRANGEE', 'VALIANTORG', 'VTL', 'VARROC', 'VBL', 'VEDL', 'VENKEYS', 'VINATIORGA', 'IDEA', 'VOLTAS', 'WABCOINDIA', 'WELCORP', 'WELSPUNIND', 'WESTLIFE', 'WHIRLPOOL', 'WIPRO', 'WOCKPHARMA', 'YESBANK', 'ZEEL', 'ZENSARTECH', 'ZYDUSWELL', 'ECLERX']
+
+	temp = {'Name' : None,'ctime' : None,'Sell_price': None,'Buy_price': None, 'LTP': None,'Entry_time' : None,'Target' : None,'Stoploss' : None,'PNL' : None,'Remark' : None,'Remark_2' : None,'Traded' : None}
+	status = {}
+
+	for name in watchlist_500:
+		status[name] = temp.copy()
+
+
+
+	zrd_watchlist = []
+
+	for name in watchlist_500:
+		zrd_watchlist.append('NSE:' + name)
+
+
+	Target = 0.005
+	Stoploss = 0.020
+
+	wb = xw.Book('live_status_orb.xlsx')
+	sht = wb.sheets['Sheet1']
+
+
+init()
+
+while True :
+
+	ctime = datetime.datetime.now().time()
+
+	ohlc_data = kite.ohlc(zrd_watchlist)
+
+	sht.range('A1').value = pd.DataFrame(status).T
+
+
+
+
+	for name in watchlist_500:
+
+		try:
+			ltp = ohlc_data['NSE:' + name]['last_price']
+			openn = ohlc_data['NSE:' + name]['ohlc']['open']
+			high = ohlc_data['NSE:' + name]['ohlc']['high']
+			low = ohlc_data['NSE:' + name]['ohlc']['low']
+			
+			pdb.set_trace()
+
+			if ctime < datetime.time(15 , 25):
+
+
+				if (ltp < low) and (status[name]['Traded'] is None) :
+					# print('Break_Down' , name , ltp)
+
+					status[name]['Name'] = name
+					status[name]['ctime'] = str(ctime)[0:5]
+					status[name]['Sell_price'] = ltp
+					status[name]['Entry_time'] = str(ctime)[0:5]
+					status[name]['Target'] = ltp - ltp*Target
+					status[name]['Stoploss'] = ltp + ltp*Stoploss
+					status[name]['Remark'] = 'Break_Down'
+					
+					status[name]['Traded'] = 'Yes'
+					status[name]['Qty'] = (200000//ltp)
+
+				if (ltp > high) and (status[name]['Traded'] is None) :
+					# print('Break_out' , name , ltp)
+
+					status[name]['Name'] = name
+					status[name]['ctime'] = str(ctime)[0:5]
+					status[name]['Buy_price'] = ltp
+					status[name]['Entry_time'] = str(ctime)[0:5]
+					status[name]['Target'] = ltp + ltp*Target
+					status[name]['Stoploss'] = ltp - ltp*Stoploss
+					status[name]['Remark'] = 'Break_Out'
+					
+					status[name]['Traded'] = 'Yes'
+					status[name]['Qty'] = (200000//ltp)
+					
+		except Exception as e:
+			continue
+		
+
+		if status[name]['Traded'] == 'Yes':
+
+			if status[name]['Remark'] == 'Break_Down' :
+
+				if ((ltp > status[name]['Stoploss']) or (ltp < status[name]['Target'])) and (status[name]['PNL'] is None) :
+
+
+					status[name]['PNL'] = (ltp - status[name]['Sell_price']) * status[name]['Qty']
+					status[name]['LTP'] = ltp
+
+
+					if (ltp > status[name]['Stoploss']):
+
+						status[name]['Remark_2'] = 'StopLoss_Hit'
+
+
+
+					if (ltp < status[name]['Target']):
+
+						status[name]['Remark_2'] = 'Target_Hit'
+
+
+
+					# if ((str(ctime.time()))[0:5]) == '15:15':
+
+					# 	status[name]['Remark_2'] = 'Market_Over'
+
+			if status[name]['Remark'] == 'Break_Out' :
+
+				if ((ltp < status[name]['Stoploss']) or (ltp > status[name]['Target'])) and (status[name]['PNL'] is None) :
+
+
+					status[name]['PNL'] = (ltp - status[name]['Buy_price']) * status[name]['Qty']
+					status[name]['LTP'] = ltp
+
+
+					if (ltp < status[name]['Stoploss']):
+
+						status[name]['Remark_2'] = 'Stoploss_Hit'
+
+
+
+					if (ltp > status[name]['Target']):
+
+						status[name]['Remark_2'] = 'Target_Hit'
+
+
+
+					# if ((str(ctime.time()))[0:5]) == '15:15':
+
+					# 	status[name]['Remark_2'] = 'Market_Over'	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# init()
+
+# for name in watchlist_500:
+
+
+
+	# ltp = kite.ltp(['NSE:' + name])['NSE:' + name]['last_price']
+
+	# ltp,openn,high,low,close,volume = get.l_ohlc_v(name)
+
+
+
+
+	# pdb.set_trace()
